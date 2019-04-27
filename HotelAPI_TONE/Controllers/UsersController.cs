@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace HotelAPI_TONE.Controllers
 {
-	[Authorize]
-	[Route("api/[controller]")]
+	//[Authorize]
+	[Route("api/users")]
 	[ApiController]
 	public class UsersController : ControllerBase
 	{
@@ -36,31 +36,31 @@ namespace HotelAPI_TONE.Controllers
 				return BadRequest(ModelState);
 			}
 
-			var Users = await _context.Users.FindAsync(id);
+			var user = await _context.Users.FindAsync(id);
 
-			if (Users == null)
+			if (user == null)
 			{
 				return NotFound();
 			}
 
-			return Ok(Users);
+			return Ok(user);
 		}
 
 		// PUT: api/Users/5
 		[HttpPut("{id}")]
-		public async Task<IActionResult> PutUser([FromRoute] int id, [FromBody] Users Users)
+		public async Task<IActionResult> PutUser([FromRoute] int id, [FromBody] Users user)
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
 
-			if (id != Users.Id)
+			if (id != user.Id)
 			{
 				return BadRequest();
 			}
 
-			_context.Entry(Users).State = EntityState.Modified;
+			_context.Entry(user).State = EntityState.Modified;
 
 			try
 			{
@@ -83,17 +83,17 @@ namespace HotelAPI_TONE.Controllers
 
 		// POST: api/Users
 		[HttpPost]
-		public async Task<IActionResult> PostUser([FromBody] Users Users)
+		public async Task<IActionResult> PostUser([FromBody] Users user)
 		{
 			if (!ModelState.IsValid)
 			{
 				return BadRequest(ModelState);
 			}
 
-			_context.Users.Add(Users);
+			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
 
-			return CreatedAtAction("GetUser", new { id = Users.Id }, Users);
+			return CreatedAtAction("GetUser", new { id = user.Id }, user);
 		}
 
 		// DELETE: api/Users/5
@@ -105,21 +105,22 @@ namespace HotelAPI_TONE.Controllers
 				return BadRequest(ModelState);
 			}
 
-			var Users = await _context.Users.FindAsync(id);
-			if (Users == null)
+			var user = await _context.Users.FindAsync(id);
+			if (user == null)
 			{
 				return NotFound();
 			}
 
-			_context.Users.Remove(Users);
+			_context.Users.Remove(user);
 			await _context.SaveChangesAsync();
 
-			return Ok(Users);
+			return Ok(user);
 		}
 
+		[Route("login")]
 		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Login(Users user)
+		//[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Login([FromBody] Users user)
 		{
 			if (ModelState.IsValid)
 			{
@@ -131,19 +132,13 @@ namespace HotelAPI_TONE.Controllers
 					//HttpContext.Session.SetInt32("USER_ID", user.USER_ID);
 					//TempData.Keep("USER_ID");
 					//TempData["USER_ID"] = user.USER_ID;
+					return Ok(user);
 				}
 			}
 			return RedirectToAction("Index", "Carts", new { id = user.Id });
 
 		}
 
-		//public async Task<IActionResult> Logout()
-		//{
-		//	//SessionWrapper.UserId = -1;
-		//	return RedirectToAction(nameof(Index));
-
-		//}
-	
 		private bool UserExists(int id)
 		{
 			return _context.Users.Any(e => e.Id == id);

@@ -78,7 +78,7 @@ namespace HotelAPI_TONE.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(item);
         }
 
         // POST: api/Items
