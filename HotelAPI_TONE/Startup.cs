@@ -12,6 +12,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using HotelAPI_TONE.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using HotelAPI_TONE.Helpers;
 
 namespace HotelAPI_TONE
 {
@@ -29,8 +33,32 @@ namespace HotelAPI_TONE
 		{
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-		    services.AddDbContext<HotelAPI_TONEContext>(options =>
-		            options.UseSqlServer(Configuration.GetConnectionString("HotelAPI_TONEContext")));
+			services.AddDbContext<HotelAPI_TONEContext>(options =>
+					options.UseSqlServer(Configuration.GetConnectionString("HotelAPI_TONEContext")));
+
+			var appSettingsSection = Configuration.GetSection("AppSettings");
+			services.Configure<AppSettings>(appSettingsSection);
+
+			var appSettings = appSettingsSection.Get<AppSettings>();
+			var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+
+			services.AddAuthentication(x =>
+			{
+				x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			})
+			.AddJwtBearer(x =>
+			{
+				x.RequireHttpsMetadata = false;
+				x.SaveToken = true;
+				x.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuerSigningKey = true,
+					IssuerSigningKey = new SymmetricSecurityKey(key),
+					ValidateIssuer = false,
+					ValidateAudience = false
+				};
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +73,7 @@ namespace HotelAPI_TONE
 				app.UseHsts();
 			}
 
+			app.UseAuthentication();
 			app.UseHttpsRedirection();
 			app.UseMvc();
 		}
