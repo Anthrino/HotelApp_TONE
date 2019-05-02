@@ -19,5 +19,7 @@ namespace HotelAPI_TONE.Models
 		public DbSet<HotelAPI_TONE.Models.Cart> Cart { get; set; }
 
 		public DbSet<HotelAPI_TONE.Models.Users> Users { get; set; }
+
+		public DbSet<HotelAPI_TONE.Models.Orders> Orders { get; set; }
 	}
 }

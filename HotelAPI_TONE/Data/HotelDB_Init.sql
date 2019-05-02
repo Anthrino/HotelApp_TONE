@@ -35,4 +35,17 @@ CREATE TABLE dbo.cart
 	itemId int,
 	constraint FK_cart_user foreign key (userId) references dbo.users (Id),
 	constraint FK_cart_item foreign key (itemId) references dbo.item (Id)
+);
+
+CREATE TABLE dbo.orders 
+(  
+    Id int IDENTITY(1,1) Primary Key,
+	orderId int,
+	userId int,
+	itemId int,
+	price Numeric,
+	quantity int,
+	dop datetime,
+	constraint FK_order_user foreign key (userId) references dbo.users (Id),
+	constraint FK_order_item foreign key (itemId) references dbo.item (Id)
 ); 
