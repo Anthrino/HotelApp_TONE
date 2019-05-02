@@ -1,6 +1,7 @@
 ﻿using HotelAPI_TONE.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,10 +23,10 @@ namespace HotelAPI_TONE.Repository
 			return await _context.Orders.Where(order => order.userId == userId).ToListAsync();
 		}
 
-		public async Task<Orders> GetOrder(int id)
+		public async Task<IEnumerable<Orders>> GetOrderItems(int id)
 		{
-			var order = await _context.Orders.FindAsync(id);
-			return order;
+			var orderItems = await _context.Orders.Where(o => o.orderId == id).ToListAsync();
+			return orderItems;
 		}
 
 		public async Task<bool> EditOrder(int id, Orders order)
