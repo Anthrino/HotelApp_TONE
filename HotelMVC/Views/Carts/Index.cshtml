@@ -1,0 +1,82 @@
+﻿@model Tuple<IEnumerable<Tuple<HotelMVC_TONE.Models.Item, HotelMVC_TONE.Models.Cart>>, IEnumerable<SelectListItem>>
+@{
+	ViewData["Title"] = "Cart";
+}
+<p></p>
+<h4>Cart</h4>
+@if (ViewBag.Message != null)
+{
+	<div class="pull-right">
+		<span>@ViewBag.Message</span>
+	</div>
+}
+@if (ViewBag.role == 1)
+{
+	<div class="pull-right">
+		Select User:
+		@using (Html.BeginForm("SetOrderuser", "Carts", FormMethod.Post))
+		{
+			<select name="orderUserId" asp-items="@Model.Item2" onchange="this.form.submit()">
+				<option selected="selected" value="">@ViewBag.orderUser</option>
+			</select>
+		}
+	</div>
+}
+
+<a asp-action="Index" asp-controller="Items" class="btn btn-default">Add Items</a>
+
+
+<table class="table">
+	<thead>
+		<tr>
+			@*<th>
+					@Html.DisplayNameFor(model => model.Item1.Select(m => m.Item1.Title))
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Item1.Select(m => m.Item1.Title))
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Item1.Select(m => m.Item2.quantity))
+				</th>
+				<th></th>*@
+		</tr>
+	</thead>
+	<tbody>
+		@{ decimal cartTotal = 0; }
+		@foreach (var item in Model.Item1)
+		{
+
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.Item1.Title)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Item1.Price)
+				</td>
+				<td>
+					@using (Html.BeginForm("Edit", "Carts", FormMethod.Post))
+					{
+						@Html.HiddenFor(modelItem => item.Item1.Id)
+						@Html.TextBoxFor(modelItem => item.Item2.quantity, new { type = "number", min = "0", step = "1", onchange = "this.form.submit()" })
+					}
+				</td>
+				<td>
+					@Html.ActionLink("Details", "Details", "Items", new { id = @item.Item1.Id }, null) |
+					<a asp-action="Delete" asp-controller="Carts" asp-route-id="@item.Item1.Id">Delete</a>
+				</td>
+			</tr>
+			cartTotal += item.Item1.Price * item.Item2.quantity;
+
+		}
+		<tr>
+			<td>
+				<h4><b>Cart Total</b></h4>
+			</td>
+			<td>
+				<h4><b>@cartTotal</b></h4>
+			</td>
+			<td></td>
+			<td><a asp-action="Order" asp-controller="Carts" class="btn btn-default">Order</a></td>
+		</tr>
+	</tbody>
+</table>

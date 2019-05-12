@@ -1,0 +1,52 @@
+﻿@model IEnumerable<OrderItem>
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta name="viewport" content="width=device-width" />
+	<title>Details</title>
+</head>
+<body>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>
+					Order Id#
+				</th>
+				<th>
+					Title
+				</th>
+				<th>
+					Price
+				</th>
+				<th>
+					Quantity
+				</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model)
+			{
+				<tr>
+					<td>
+						@Html.DisplayFor(modelItem => item.order.orderId)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.item.Title)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.item.Price)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.order.quantity)
+					</td>
+					<td>
+						<a asp-action="Details" asp-controller="Items" asp-route-id="@item.item.Id">Details</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</body>
+</html>

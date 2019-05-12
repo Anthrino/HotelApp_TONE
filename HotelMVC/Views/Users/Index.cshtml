@@ -1,0 +1,42 @@
+﻿@model IEnumerable<HotelMVC_TONE.Models.Users>
+<p>
+	<a asp-action="Create" asp-controller="Users" class="btn btn-default">Create New</a>
+</p>
+<table class="table">
+	<thead>
+		<tr>
+			<th>
+				@Html.DisplayNameFor(model => model.username)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.role)
+			</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.username)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.role)
+				</td>
+				<td>
+					<a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+					<a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
+@if (ViewBag.Message != null)
+{
+	<div class="pull-right">
+		<span>@ViewBag.Message</span>
+	</div>
+}
+<hr />
+
