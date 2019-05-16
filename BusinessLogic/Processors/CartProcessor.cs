@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BusinessLogic.Processors
 {
-	public class CartProcessor
+	public class CartProcessor : BaseProcessor
 	{
 		private readonly CartRepository cartRepo;
 

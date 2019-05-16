@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HotelAPI_TONE.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Mail;
 using System.ComponentModel;
 using HotelAPI_TONE.Repository;
 using Microsoft.Extensions.Logging;
+using Shared.Models;
+using HotelAPI_TONE.Data;
 
 namespace HotelAPI_TONE.Controllers
 {
@@ -19,20 +20,21 @@ namespace HotelAPI_TONE.Controllers
 	[ApiController]
 	public class CartsController : ControllerBase
 	{
-		private readonly HotelAPI_TONEContext _context;
 		private readonly ILogger _logger;
+		private readonly CartProcessor cartProcessor;
 
-		public CartsController(HotelAPI_TONEContext context, ILogger<CartsController> logger)
+
+		public CartsController(ILogger<CartsController> logger)
 		{
-			_context = context;
 			_logger = logger;
+			cartProcessor = new CartProcessor();
 		}
 
 		// GET: api/Carts
 		[HttpGet("{id}")]
 		public async Task<ActionResult<IEnumerable<Cart>>> GetCart([FromRoute] int? id)
 		{
-			return await _context.Cart.Where(citem => citem.userId == id).ToListAsync();
+			return Ok(await cartProcessor.GetCart(id));
 		}
 
 		// GET: api/Carts/id
@@ -44,22 +46,13 @@ namespace HotelAPI_TONE.Controllers
 			{
 				return BadRequest(ModelState);
 			}
-			try
+			var cartItem = cartProcessor.GetCartItem(cart.userId, cart.ItemId);
+			if (cartItem == null)
 			{
-				var cartItem = await _context.Cart.FirstAsync(citem => citem.userId == cart.userId && citem.itemId == cart.itemId);
-
-				if (cartItem == null)
-				{
-					return NotFound();
-				}
-
-				return Ok(cartItem);
-
+				return NotFound();
 			}
-			catch (Exception)
-			{
-				throw;
-			}
+
+			return Ok(cartItem);
 		}
 
 		// PUT: api/Carts/5
@@ -76,24 +69,7 @@ namespace HotelAPI_TONE.Controllers
 				return BadRequest();
 			}
 
-			_context.Entry(cart).State = EntityState.Modified;
-
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				if (!CartExists(id))
-				{
-					return NotFound();
-				}
-				else
-				{
-					throw;
-				}
-			}
-
+			await cartProcessor.EditCart(id, cart);
 			return NoContent();
 		}
 
@@ -106,9 +82,7 @@ namespace HotelAPI_TONE.Controllers
 				return BadRequest(ModelState);
 			}
 
-			_context.Cart.Add(cart);
-			await _context.SaveChangesAsync();
-
+			await cartProcessor.InsertCart(cart);
 			return CreatedAtAction("GetCart", new { id = cart.Id }, cart);
 		}
 
@@ -121,23 +95,16 @@ namespace HotelAPI_TONE.Controllers
 				return BadRequest(ModelState);
 			}
 
-			var cart = await _context.Cart.FindAsync(id);
+			var cart = await cartProcessor.GetCartItem(id);
 			if (cart == null)
 			{
 				return NotFound();
 			}
 
-			_context.Cart.Remove(cart);
-			await _context.SaveChangesAsync();
-
-			return Ok(cart);
-		}
-
-		[Route("exists")]
-		[HttpGet("{id}")]
-		private bool CartExists([FromRoute] int id)
-		{
-			return _context.Cart.Any(e => e.Id == id);
+			if (await cartProcessor.DeleteCart(id))
+				return Ok(cart);
+			else
+				return BadRequest();
 		}
 	}
 

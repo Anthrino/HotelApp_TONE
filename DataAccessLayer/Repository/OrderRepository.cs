@@ -37,9 +37,9 @@ namespace DataAccessLayer.Repository
 
 		public async Task<int> Insert(Orders entity)
 		{
-			var item = await this.orderRepo.Insert(entity).ConfigureAwait(false);
+			var order = await this.orderRepo.Insert(entity).ConfigureAwait(false);
 			this.orderRepo.SaveChanges();
-			return item.Id;
+			return order.Id;
 		}
 
 		public async Task Update(Orders entity)

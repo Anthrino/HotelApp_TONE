@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BusinessLogic.Processors
 {
-	public class UserProcessor
+	public class UserProcessor : BaseProcessor
 	{
 		private readonly UserRepository userRepo;
 

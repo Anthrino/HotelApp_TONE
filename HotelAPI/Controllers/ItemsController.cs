@@ -5,125 +5,99 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using HotelAPI_TONE.Models;
+using HotelAPI_TONE.Data;
 using Microsoft.AspNetCore.Authorization;
+using Shared.Models;
 
 namespace HotelAPI_TONE.Controllers
 {
 	//[Authorize]
 	[Route("api/items")]
-    [ApiController]
-    public class ItemsController : ControllerBase
-    {
-        private readonly HotelAPI_TONEContext _context;
+	[ApiController]
+	public class ItemsController : ControllerBase
+	{
+		private readonly ItemProcessor itemProcessor;
 
-        public ItemsController(HotelAPI_TONEContext context)
-        {
-            _context = context;
-        }
-
-        // GET: api/Items
-		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Item>>> GetItem()
+		public ItemsController()
 		{
-			return await _context.Item.ToListAsync();
+			itemProcessor = new ItemProcessor();
+		}
+
+		// GET: api/Items
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<Item>>> GetItems()
+		{
+			return await itemProcessor.GetItems();
 		}
 
 		// GET: api/Items/5
 		[HttpGet("{id}")]
-        public async Task<IActionResult> GetItem([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		public async Task<IActionResult> GetItem([FromRoute] int id)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            var item = await _context.Item.FindAsync(id);
+			var item = await itemProcessor.GetItem(id);
 
-            if (item == null)
-            {
-                return NotFound();
-            }
+			if (item == null)
+			{
+				return NotFound();
+			}
+			return Ok(item);
+		}
 
-            return Ok(item);
-        }
+		// PUT: api/Items/5
+		[HttpPut("{id}")]
+		public async Task<IActionResult> PutItem([FromRoute] int id, [FromBody] Item item)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			if (id != item.Id)
+			{
+				return BadRequest();
+			}
 
-        // PUT: api/Items/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutItem([FromRoute] int id, [FromBody] Item item)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+			await itemProcessor.EditItem(id, item);
+			return Ok(await itemProcessor.GetItem(id));
+		}
 
-            if (id != item.Id)
-            {
-                return BadRequest();
-            }
+		// POST: api/Items
+		[HttpPost]
+		public async Task<IActionResult> PostItem([FromBody] Item item)
+		{
 
-            _context.Entry(item).State = EntityState.Modified;
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+			await itemProcessor.InsertItem(item);
+			return CreatedAtAction("GetItem", new { id = item.Id }, item);
+		}
 
-            return Ok(item);
-        }
+		// DELETE: api/Items/5
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteItem([FromRoute] int id)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-        // POST: api/Items
-        [HttpPost]
-        public async Task<IActionResult> PostItem([FromBody] Item item)
-        {
+			var item = await itemProcessor.GetItem(id);
+			if (item == null)
+			{
+				return NotFound();
+			}
 
-			Console.WriteLine("Title:" + item.Title);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            _context.Item.Add(item);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetItem", new { id = item.Id }, item);
-        }
-
-        // DELETE: api/Items/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteItem([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var item = await _context.Item.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            _context.Item.Remove(item);
-            await _context.SaveChangesAsync();
-
-            return Ok(item);
-        }
-
-        private bool ItemExists(int id)
-        {
-            return _context.Item.Any(e => e.Id == id);
-        }
-    }
+			if (await itemProcessor.DeleteItem(id))
+				return Ok(item);
+			else
+				return BadRequest();
+		}
+	}
 }

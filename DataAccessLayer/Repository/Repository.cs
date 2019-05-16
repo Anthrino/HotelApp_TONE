@@ -50,10 +50,15 @@ namespace DataAccessLayer.Repository
 			{
 				throw new ArgumentNullException();
 			}
-
-			this.Entities.Update(entity);
+			try
+			{
+				this.Entities.Update(entity);
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				throw;
+			}
 		}
-
 		public async Task Delete(T entity)
 		{
 			if (entity == null)

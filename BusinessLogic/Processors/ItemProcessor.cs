@@ -5,7 +5,7 @@ using Shared.Models;
 
 namespace BusinessLogic.Processors
 {
-	public class ItemProcessor
+	public class ItemProcessor : BaseProcessor
 	{
 		private readonly ItemRepository itemRepo;
 
